@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Local training artifacts. Regenerate them with `python -m seq2seq.train`.
+outputs/
+*.pt
+*.pth
+
+# Local environments and editor files.
+.venv/
+venv/
+.env
+.vscode/
+.idea/
+
