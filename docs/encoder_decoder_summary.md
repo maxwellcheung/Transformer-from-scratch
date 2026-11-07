@@ -241,19 +241,22 @@ Notebook 修改模块后若出现“磁盘代码已有方法，但运行时 Attr
 - 缺字段或配置/权重不匹配的 checkpoint 明确失败
 - 贪心解码遇到 EOS 提前停止、Encoder 只执行一次并恢复原训练模式
 
-## 12. 后续：Decoder-only GPT 与 KV Cache
+## 12. 衔接：Decoder-only GPT 与 KV Cache
 
-下一阶段会复用本阶段对 shape、causal mask 和自回归生成的理解：
+在 Encoder–Decoder 基础上，项目已经继续完成：
 
 ```text
 Decoder-only GPT
 → 移除 Encoder 与 cross-attention
 → 单序列 next-token prediction
-→ causal self-attention blocks
-→ 自回归生成
-→ 缓存历史 K/V
-→ 验证有无 KV Cache 的 logits 完全一致
+→ Pre-LN causal self-attention blocks
+→ 普通自回归生成
+→ 分层缓存历史 K/V
+→ 验证有无 KV Cache 的 logits 与生成结果一致
 ```
 
-KV Cache 的核心不是改变模型结果，而是避免每一步都重新投影和处理全部历史 token。
+KV Cache 不改变模型语义，而是避免生成时反复投影和处理全部历史 token。下一份总结会从
+Encoder–Decoder 已有知识出发，循序解释 GPT 训练、普通生成、prefill 与单 token decode：
+
+[`gpt_kv_cache_summary.md`](gpt_kv_cache_summary.md)
 

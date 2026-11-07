@@ -1,11 +1,11 @@
 # Transformer from Scratch
 
-一个面向学习的 PyTorch Encoder–Decoder Transformer 实现。项目不调用
+一个面向学习的 PyTorch Transformer 实现，包含 Encoder–Decoder、Decoder-only GPT 与 KV Cache。项目不调用
 `nn.Transformer`、`nn.MultiheadAttention` 或 PyTorch 内置的
 `scaled_dot_product_attention`，而是从词表、Mask 和缩放点积注意力开始，逐步完成训练、
-checkpoint 与自回归翻译。
+checkpoint、自回归翻译和增量生成。
 
-当前里程碑：Encoder–Decoder 阶段完成。下一阶段将实现 Decoder-only GPT 和 KV Cache。
+当前里程碑：Encoder–Decoder、Decoder-only GPT 与 KV Cache 核心路线均已完成。
 
 ## 已实现内容
 
@@ -19,6 +19,11 @@ checkpoint 与自回归翻译。
 - 忽略 PAD 的 token loss、accuracy、梯度裁剪与训练循环
 - CSV 指标记录、checkpoint 保存/恢复和贪心解码
 - shape、梯度、Mask 隔离、过拟合与损坏 checkpoint 等自动化测试
+- next-token prediction 数据错位与 Decoder-only GPT Dataset
+- Pre-LN GPT Block、可学习位置嵌入与完整 GPT 语言模型
+- GPT token loss、accuracy、单步训练和无 Cache 贪心生成
+- Attention、GPT Block、完整模型三级 KV Cache
+- prefill / decode 两阶段缓存生成，以及缓存与非缓存结果一致性测试
 
 ## 项目结构
 
@@ -36,9 +41,16 @@ from_scratch/
 │   ├── train.py          # 可复现训练入口与 CSV 指标
 │   ├── checkpoint.py     # checkpoint 保存与加载
 │   └── inference.py      # 贪心解码
+├── gpt/
+│   ├── data.py           # next-token Dataset 与动态 padding
+│   ├── layers.py         # Pre-LN GPT Block
+│   ├── model.py          # Decoder-only GPT 与分层 KV Cache
+│   ├── training.py       # GPT train_step
+│   └── inference.py      # 普通/缓存贪心生成
 ├── tests/                # 组件与端到端测试
 ├── docs/
-│   └── encoder_decoder_summary.md
+│   ├── encoder_decoder_summary.md
+│   └── gpt_kv_cache_summary.md
 └── scratch.ipynb         # Notebook 探索记录
 ```
 
@@ -126,9 +138,42 @@ Decoder hidden             [B,T,D]
 更多原理、公式、常见错误和复习清单见
 [`docs/encoder_decoder_summary.md`](docs/encoder_decoder_summary.md)。
 
-## 后续路线
+## Decoder-only GPT 与 KV Cache
 
-- Decoder-only GPT 的 next-token 数据与 causal block
-- GPT 自回归训练和生成
-- KV Cache 的接口、正确性测试与计算量对比
+GPT 训练使用同一序列的一位错开目标：
+
+```text
+input_ids  <sos>  i     love  cats
+targets    i      love  cats  <eos>
+```
+
+普通生成每轮重新计算完整前缀；KV Cache 首先对 prompt 做 prefill，然后每轮只处理一个新
+token。项目通过数值测试验证了两条路径的最终 logits 和贪心生成结果一致。
+
+关键 shape：
+
+```text
+当前 Query                 [B,H,1,Dh]
+历史 K/V + 当前 K/V        [B,H,T,Dh]
+增量 attention scores      [B,H,1,T]
+每层 Cache                 (key, value)
+全模型 Cache               list[(key, value)]
+```
+
+完整原理、代码地图、计算量与显存分析、常见错误和复习清单见
+[`docs/gpt_kv_cache_summary.md`](docs/gpt_kv_cache_summary.md)。
+
+## 学习结果
+
+- Encoder–Decoder 教学模型可以把 `i love you` 生成成 `我 爱 你`
+- GPT 单样本实验达到 loss `0.0004`、token accuracy `1.0`
+- 普通生成与 KV Cache 生成均得到 `i love cats`
+- 当前完整回归测试结果为 `70 passed`
+
+## 可继续扩展的方向
+
+- GPT checkpoint 与独立训练 CLI
+- temperature、top-k 和 top-p 采样
+- 批量不等长 prompt 的 Cache 与 padding mask
+- 预分配 KV Cache，减少反复 `torch.cat`
 
