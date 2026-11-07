@@ -61,6 +61,25 @@ from_scratch/
 2. [`Encoder–Decoder 阶段总结`](docs/encoder_decoder_summary.md)：按模块复习公式、shape 与测试不变量
 3. [`Decoder-only GPT 与 KV Cache`](docs/gpt_kv_cache_summary.md)：理解单序列生成和增量推理
 
+## 环境安装
+
+使用 Conda 一次性创建与当前开发环境一致的 Python 3.10、PyTorch 2.6.0
+和 CUDA 11.8 环境：
+
+```bash
+conda env create -f environment.yml
+conda activate transformer-from-scratch
+```
+
+如果已有 Python 3.10 Conda 环境，也可以只安装 Python 依赖：
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+`requirements.txt` 使用 PyTorch 官方 CUDA 11.8 wheel；机器仍需安装兼容的
+NVIDIA 驱动。真实语料、模型权重和训练日志不属于环境依赖，不会被安装或提交。
+
 ## 快速验证
 
 在本目录执行：
