@@ -49,10 +49,17 @@ from_scratch/
 │   └── inference.py      # 普通/缓存贪心生成
 ├── tests/                # 组件与端到端测试
 ├── docs/
+│   ├── translation_case_walkthrough.md
 │   ├── encoder_decoder_summary.md
 │   └── gpt_kv_cache_summary.md
 └── scratch.ipynb         # Notebook 探索记录
 ```
+
+## 推荐阅读顺序
+
+1. [`我 爱 你 → i love you` 完整案例](docs/translation_case_walkthrough.md)：第一次系统理解 Transformer 时先读这一篇
+2. [`Encoder–Decoder 阶段总结`](docs/encoder_decoder_summary.md)：按模块复习公式、shape 与测试不变量
+3. [`Decoder-only GPT 与 KV Cache`](docs/gpt_kv_cache_summary.md)：理解单序列生成和增量推理
 
 ## 快速验证
 

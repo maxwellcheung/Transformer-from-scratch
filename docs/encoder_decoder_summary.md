@@ -21,6 +21,9 @@
 教学实验在三条训练样本上达到 token accuracy `1.0`，并能将 `i love you` 生成成
 `我 爱 你`。这是训练链路与模型可学习性的验证，不是泛化能力评估。
 
+如果你希望先跟着一个具体句子观察每一步向量和 shape，可以先阅读
+[`从“我 爱 你”到 “i love you”`](translation_case_walkthrough.md)，再回到本篇按模块复习。
+
 ## 2. 数据与 teacher forcing
 
 词表构建和编码必须使用相同的 token 粒度。本项目统一使用 `text.split()`，避免“构建时按
