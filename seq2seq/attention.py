@@ -205,3 +205,54 @@ class MultiHeadAttention(nn.Module):
         output = self.out_proj(context)
 
         return output, weights
+
+    def forward_with_cache(
+        self,
+        x,
+        past_key_value=None,
+        mask=None,
+    ):
+        self._validate_input('x', x)
+
+        # 只对本次新输入计算 Q、K、V。
+        q = self.q_proj(x)
+        new_key = self.k_proj(x)
+        new_value = self.v_proj(x)
+
+        q = self._split_heads(q)
+        new_key = self._split_heads(new_key)
+        new_value = self._split_heads(new_value)
+
+        if past_key_value is None:
+            key = new_key
+            value = new_value
+        else:
+            past_key, past_value = past_key_value
+
+            key = torch.cat(
+                [past_key, new_key],
+                dim=2,
+            )
+
+            value = torch.cat(
+                [past_value, new_value],
+                dim=2,
+            )
+
+        context, weights = scaled_dot_product_attention(
+            q,
+            key,
+            value,
+            mask=mask,
+            dropout=self.attention_dropout,
+        )
+
+        context = self._combine_heads(context)
+        output = self.out_proj(context)
+
+        present_key_value = (
+            key,
+            value,
+        )
+
+        return output, weights, present_key_value
