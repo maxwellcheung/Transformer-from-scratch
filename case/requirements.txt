@@ -1,0 +1,4 @@
+sentencepiece>=0.2.0,<0.3
+sacrebleu>=2.4,<3
+swanlab>=0.10.4,<0.11
+
